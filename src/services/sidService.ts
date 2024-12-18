@@ -1,4 +1,5 @@
 import AttackTypeModel from "../models/AttackTypeModel";
+import CountryGroupsModel from "../models/CountryGroupsModel";
 import EventModel, { IEvent } from "../models/EventModel";
 import StateAttacksModel from "../models/StateAttacksModel";
 import YearAttacksModel from "../models/YearAttacksModel";
@@ -9,6 +10,7 @@ export const addMany = async (events: IEvent[]) => {
         // await addToAttackTypeModel(event);
         // await addToYearAttacksModel(event);
         // await addToStateAttacksModel(event);
+        // await addToCountryGroupsModel(event);
     // }
     console.log("added all events")
 }
@@ -58,4 +60,23 @@ const addToStateAttacksModel = async (event: IEvent) => {
     const newStateAttacks = new StateAttacksModel({country_txt: event.country_txt, count: 1, countKill: event.nkill || 0, countWound: event.nwound || 0});
     await newStateAttacks.save();
     return newStateAttacks;
+}
+
+const addToCountryGroupsModel = async (event: IEvent) => {
+    const countryGroups = await CountryGroupsModel.findOne({country_txt: event.country_txt});
+    if(countryGroups){
+        for (const group of countryGroups.groups){
+            if(group.gname === event.gname){
+                group.count += 1;
+                await countryGroups.save();
+                return countryGroups;
+            }
+        }
+        countryGroups.groups.push({gname: event.gname, count: 1});
+        await countryGroups.save();
+        return countryGroups;
+    }
+    const newCountryGroups = new CountryGroupsModel({country_txt: event.country_txt, groups: [{gname: event.gname, count: 1}]});
+    await newCountryGroups.save();
+    return newCountryGroups;
 }
