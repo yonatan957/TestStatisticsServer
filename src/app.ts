@@ -6,7 +6,6 @@ import http from "http";
 import { Server } from "socket.io";
 import { handleSocketConnection } from "./socket/io";
 import { initProject } from "./services/sidService";
-import { IEvent } from "./models/EventModel";
 
 const PORT = process.env.PORT;
 const app = express();
