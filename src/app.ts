@@ -25,9 +25,10 @@ conectToMongo();
 app.use(express.json());
 app.use(cors());
 
-app.use("api", apiRouter);
-initProject();
+app.use("/api", apiRouter);
+
 
 httpServer.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
+  initProject();
 });
