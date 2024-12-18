@@ -1,5 +1,5 @@
 import AttackTypeModel from "../models/AttackTypeModel";
-import CountryGroupsModel from "../models/CountryGroupsModel";
+import CountryGroupsModel, { ICountryGroups } from "../models/CountryGroupsModel";
 import EventModel, { IEvent } from "../models/EventModel";
 import StateAttacksModel from "../models/StateAttacksModel";
 import YearAttacksModel from "../models/YearAttacksModel";
@@ -8,23 +8,26 @@ import YearGroupsModel from "../models/YearGroupsModel";
 export const initProject = async () => {
     console.time('initProject');
   
-    const eventExists = await EventModel.findOne();
-    if (eventExists) {
-      return;
-    }
-  
+    // const eventExists = await EventModel.findOne();
+    // if (eventExists) {
+    //   return;
+    // }
+    
     const events = require(process.env.DATA_PATH as string);
+    const totalEvents = events.length;
+    let i = 0;
     for (const event of events) {
-      await addTODataBase(event);
-      await addToAttackTypeModel(event);
-      await addToYearAttacksModel(event);
-      await addToStateAttacksModel(event);
-      await addToCountryGroupsModel(event);
-      await addToYearGroupsModel(event);
+    //   await addTODataBase(event);
+    //   await addToAttackTypeModel(event);
+    //   await addToYearAttacksModel(event);
+    //   await addToStateAttacksModel(event);
+    //   await addToCountryGroupsModel(event);
+    //   await addToYearGroupsModel(event);
+      process.stdout.write(`\r${++i}/${totalEvents} (${Math.floor((i / totalEvents) * 100)}%)`);
     }
 
-    console.log("added all events");
-  
+    console.log("\n added all events");
+    await sortGroupsByCasualties();
     console.timeEnd('initProject');
   };
 
@@ -165,4 +168,31 @@ const addToYearGroupsModel = async (event: IEvent) => {
   });
   await newYearGroups.save();
   return newYearGroups;
+};
+
+
+const sortGroupsByCasualties = async function (
+    country_txt?: string,
+    gname?: string
+) {
+    if (country_txt && gname) {
+        const country = await CountryGroupsModel.findOne({ country_txt });
+
+        if (country) {
+            const group = country.groups.find((g: { gname: string }) => g.gname === gname);
+            if (group) {
+                country.groups.sort((a: { count: number }, b: { count: number }) => b.count - a.count);
+                await country.save();
+            }
+        }
+    } else {
+        const countries = await CountryGroupsModel.find();
+
+        await Promise.all(
+            countries.map(async (country: ICountryGroups) => {
+                country.groups.sort((a: { count: number }, b: { count: number }) => b.count - a.count);
+                await country.save();
+            })
+        );
+    }
 };

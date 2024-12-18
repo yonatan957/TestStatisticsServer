@@ -1,3 +1,5 @@
+// the year groups collection - amount of attacks in each group in each year - question 5
+
 import { Document, model, Schema } from "mongoose"
 
 export interface IYearGroups extends Document {
