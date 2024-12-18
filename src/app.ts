@@ -6,6 +6,7 @@ import http from "http";
 import { Server } from "socket.io";
 import { handleSocketConnection } from "./socket/io";
 import { initProject } from "./services/sidService";
+import apiRouter from "./routes/apiRouter";
 
 const PORT = process.env.PORT;
 const app = express();
@@ -24,6 +25,7 @@ conectToMongo();
 app.use(express.json());
 app.use(cors());
 
+app.use("api", apiRouter);
 initProject();
 
 httpServer.listen(PORT, () => {
