@@ -8,24 +8,23 @@ import {
   getRegionsByGroup
 } from "../services/apiService";
 
-// export const getDeadliestAttackTypes = async (req: Request, res: Response) => {
-//   try {
-//     const data = await getAttackTypes();
-//     res.status(200).json(data);
-//   } catch (error) {
-//     res.status(500).json({ message: "Error fetching deadliest attack types", error: (error as Error).message });
-//   }
-// };
+export const getDeadliestAttackTypes = async (req: Request, res: Response) => {
+  try {
+    const data = await getAttackTypes();
+    res.status(200).json(data);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching deadliest attack types", error: (error as Error).message });
+  }
+};
 
-// export const getHighestCasualtyRegions = async (req: Request, res: Response) => {
-//   try {
-//     const { region } = req.query;
-//     const result = await getCasualtyRegions(region);
-//     res.json(result);
-//   } catch (error) {
-//     res.status(500).json({ message: 'Error fetching highest casualty regions', error: (error as Error).message });
-//   }
-// };
+export const getHighestCasualtyRegions = async (req: Request, res: Response) => {
+  try {
+    const result = await getCasualtyRegions();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching highest casualty regions', error: (error as Error).message });
+  }
+};
 
 // export const getIncidentTrends = async (req: Request, res: Response) => {
 //   try {
