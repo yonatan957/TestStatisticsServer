@@ -1,11 +1,12 @@
 import express from 'express'
 import 'dotenv/config'
-import usersController from './controllers/users'
 import { conectToMongo } from './config/DB'
 import cors from 'cors'
 import http from 'http'
 import { Server } from 'socket.io'
 import { handleSocketConnection } from './socket/io'
+import { addMany } from './services/sidService'
+const data = require('../initialData.json')
 
 const PORT = process.env.PORT
 const app = express()
@@ -24,7 +25,8 @@ conectToMongo()
 app.use(express.json())
 app.use(cors())
 
-app.use('/users', usersController)
+
+addMany(data)
 
 httpServer.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`)
