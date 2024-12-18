@@ -12,16 +12,17 @@ export const initProject = async () => {
     const totalEvents = events.length;
     let i = 0;
     for (const event of events) {
-      await addTODataBase(event);
-      await addToAttackTypeModel(event);
-      await addToYearAttacksModel(event);
-      await addToStateAttacksModel(event);
-      await addToCountryGroupsModel(event);
-      await addToYearGroupsModel(event);
-      process.stdout.write(`\r${++i}/${totalEvents} (${Math.floor((i / totalEvents) * 100)}%)`);
+      // await addTODataBase(event);
+      // await addToAttackTypeModel(event);
+      // await addToYearAttacksModel(event);
+      // await addToStateAttacksModel(event);
+      // await addToCountryGroupsModel(event);
+      // await addToYearGroupsModel(event);
+      let procent = Math.floor((i / totalEvents) * 100);
+      process.stdout.write(`\r${++i}/${totalEvents} (${procent}%)${ procent < 20 ? '😨' : procent < 40 ? '😭' : procent < 60 ? '😑' : procent < 80 ? '😊' : '😀'} `);
     }
 
-    console.log("\n added all events");
+    console.log("\nadded all events 😗");
     await sortGroupsByCasualties();
     console.timeEnd('initProject');
   };
