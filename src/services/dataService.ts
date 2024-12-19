@@ -103,65 +103,66 @@ const newStateAttacks = new StateAttacksModel({
   
 // question 4 & 6
 export const addToCountryGroupsModel = async (event: IEvent) => {
-    const countryGroups = await CountryGroupsModel.findOne({
-      country_txt: event.country_txt,
-    });
-    if (countryGroups) {
-      for (const group of countryGroups.groups) {
-        if (group.gname === event.gname) {
-          group.count += (event.nwound == undefined ?  0 : event.nwound) + (event.nkill == undefined ? 0 : event.nkill);
-          await countryGroups.save();
-          return countryGroups;
-        }
-      }
-      countryGroups.groups.push({ gname: event.gname, count: (event.nwound == undefined ?  0 : event.nwound) + (event.nkill == undefined ? 0 : event.nkill) });
-      await countryGroups.save();
-      return countryGroups;
+  const casualties = (event.nwound ?? 0) + (event.nkill ?? 0);
+
+  let countryGroups = await CountryGroupsModel.findOne({ country_txt: event.country_txt });
+
+  if (countryGroups) {
+    const group = countryGroups.groups.find(g => g.gname === event.gname);
+    if (group) {
+      group.count += casualties;
+    } else {
+      countryGroups.groups.push({ gname: event.gname, count: casualties });
     }
-    const response = await fetch(
-      ((process.env.LINK_API_COUNTRIES as string) +
-        encodeURIComponent(event.country_txt) +
-        process.env.KEY_API_COUNTRIES) as string
-    );
-    if (!response.ok) {
-      throw new Error(`HTTP error! status: ${response.status}`);
-    }
-    const data = await response.json();
-    if (!data.results[0].geometry.lat || !data.results[0].geometry.lng) {
-      throw new Error("no coordinates found");
-    }
-    const newCountryGroups = new CountryGroupsModel({
-      country_txt: event.country_txt,
-      groups: [{ gname: event.gname, count: 1 }],
-      lat: data.results[0].geometry.lat,
-      lng: data.results[0].geometry.lng,
-    });
-    await newCountryGroups.save();
-    return newCountryGroups;
-  };
+    await countryGroups.save();
+    return countryGroups;
+  }
+
+  const response = await fetch(
+    `${process.env.LINK_API_COUNTRIES}${encodeURIComponent(event.country_txt)}${process.env.KEY_API_COUNTRIES}`
+  );
+  if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
+
+  const data = await response.json();
+  const { lat, lng } = data.results[0].geometry;
+  if (!lat || !lng) throw new Error("No coordinates found");
+
+  countryGroups = new CountryGroupsModel({
+    country_txt: event.country_txt,
+    groups: [{ gname: event.gname, count: casualties }],
+    lat,
+    lng,
+  });
+
+  await countryGroups.save();
+  return countryGroups;
+};
+
 
 // question 5
 export const addToYearGroupsModel = async (event: IEvent) => {
-    const yearGroups = await YearGroupsModel.findOne({ year: event.iyear });
-    if (yearGroups) {
-      for (const group of yearGroups.groups) {
-        if (group.gname === event.gname) {
-          group.count += (event.nwound == undefined ?  0 : event.nwound) + (event.nkill == undefined ? 0 : event.nkill);
-          await yearGroups.save();
-          return yearGroups;
-        }
-      }
-      yearGroups.groups.push({ gname: event.gname, count: (event.nwound == undefined ?  0 : event.nwound) + (event.nkill == undefined ? 0 : event.nkill) });
-      await yearGroups.save();
-      return yearGroups;
+  const casualties = (event.nwound ?? 0) + (event.nkill ?? 0);
+  let yearGroups = await YearGroupsModel.findOne({ year: event.iyear });
+
+  if (yearGroups) {
+    const group = yearGroups.groups.find(g => g.gname === event.gname);
+    if (group) {
+      group.count += casualties;
+    } else {
+      yearGroups.groups.push({ gname: event.gname, count: casualties });
     }
-    const newYearGroups = new YearGroupsModel({
-      year: event.iyear,
-      groups: [{ gname: event.gname, count: (event.nwound == undefined ?  0 : event.nwound) + (event.nkill == undefined ? 0 : event.nkill) }],
-    });
-    await newYearGroups.save();
-    return newYearGroups;
-  };
+    await yearGroups.save();
+    return yearGroups;
+  }
+
+  yearGroups = new YearGroupsModel({
+    year: event.iyear,
+    groups: [{ gname: event.gname, count: casualties }],
+  });
+
+  await yearGroups.save();
+  return yearGroups;
+};
   
 export const sortGroupsByCasualties = async function (
       country_txt?: string,
@@ -192,15 +193,24 @@ export const deleteEvent = async (id:string)=>{
 }
 
 const decreseForAll = async (event: IEvent) => {
-  console.log(event);
+  const nkill = event.nkill ?? 0;
+  const nwound = event.nwound ?? 0;
+  const totalDecrease = -(nkill + nwound);
+
   await Promise.all([
-    AttackTypeModel.findOneAndUpdate({ attacktype1_txt: event.attacktype1_txt }, { $inc: { countKill: -(event.nkill == undefined ? 0 : event.nkill), countWound: -(event.nwound == undefined ? 0 : event.nwound) } }, { new: true }),
-    YearGroupsModel.findOneAndUpdate({ year: event.iyear, 'groups.gname': event.gname },{ $inc: {'groups.$.count': -((event.nkill == undefined ? 0 : event.nkill) + (event.nwound == undefined ? 0 : event.nwound))}},{ new: true }),
-    CountryGroupsModel.findOneAndUpdate({ country_txt: event.country_txt, 'groups.gname': event.gname },{ $inc: {'groups.$.count': -((event.nkill == undefined ? 0 : event.nkill) + (event.nwound == undefined ? 0 : event.nwound))}},{ new: true }),
-    StateAttacksModel.findOneAndUpdate({ country_txt: event.country_txt }, { $inc: { count: -(event.nkill == undefined ? 0 : event.nkill) - (event.nwound == undefined ? 0 : event.nwound), countKill: -(event.nkill == undefined ? 0 : event.nkill), countWound: -(event.nwound == undefined ? 0 : event.nwound) } }, { new: true }),
-    YearAttacksModel.findOneAndUpdate({ year: event.iyear }, { $inc: { count: -(event.nkill == undefined ? 0 : event.nkill) - (event.nwound == undefined ? 0 : event.nwound), countKill: -(event.nkill == undefined ? 0 : event.nkill), countWound: -(event.nwound == undefined ? 0 : event.nwound) } }, { new: true }),
-  ])
-}
+    // question 1
+    AttackTypeModel.findOneAndUpdate({ attacktype1_txt: event.attacktype1_txt }, { $inc: { countKill: -nkill, countWound: -nwound } }),
+
+    // question 4,5,6
+    YearGroupsModel.findOneAndUpdate({ year: event.iyear, 'groups.gname': event.gname }, { $inc: { 'groups.$.count': totalDecrease } }),
+    CountryGroupsModel.findOneAndUpdate({ country_txt: event.country_txt, 'groups.gname': event.gname }, { $inc: { 'groups.$.count': totalDecrease } }),
+
+    // question 2,3
+    StateAttacksModel.findOneAndUpdate({ country_txt: event.country_txt }, { $inc: { count: -1, countKill: -nkill, countWound: -nwound } }),
+    YearAttacksModel.findOneAndUpdate({ year: event.iyear }, { $inc: { count: -1, countKill: -nkill, countWound: -nwound } }),
+  ]);
+};
+
 
 export const updateEvent = async (event: IEvent) => {
   try {
