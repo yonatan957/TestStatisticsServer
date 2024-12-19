@@ -146,7 +146,7 @@ export const addToYearGroupsModel = async (event: IEvent) => {
     if (yearGroups) {
       for (const group of yearGroups.groups) {
         if (group.gname === event.gname) {
-          group.count += 1;
+          group.count += (event.nwound == undefined ?  0 : event.nwound) + (event.nkill == undefined ? 0 : event.nkill);
           await yearGroups.save();
           return yearGroups;
         }
