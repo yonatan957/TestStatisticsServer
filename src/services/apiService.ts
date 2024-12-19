@@ -1,4 +1,5 @@
 import AttackTypeModel from "../models/AttackTypeModel";
+import CountryGroupsModel from "../models/CountryGroupsModel";
 import StateAttacksModel from "../models/StateAttacksModel";
 import YearAttacksModel from "../models/YearAttacksModel";
 
@@ -41,8 +42,13 @@ export const getIncidentTrendsService = async (year: number, endYear: number)=>{
     return await YearAttacksModel.find({year: {$gte: year, $lte: endYear}}).lean();
 }
 
-export const getTopGroups = async ()=>{
+// question 4
+export const getTopGroups = async (country: string, limit: number)=>{
+    const countryObject = await CountryGroupsModel.findOne({country_txt: country}).lean();
+    if(!countryObject) throw new Error('country not found');
 
+    const result = countryObject.groups.sort((a: { count: number }, b: { count: number }) => b.count - a.count);
+    return limit == -1 ? result : result.slice(0, limit);
 }
 
 export const getGroupsByYearService = async ()=>{

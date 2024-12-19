@@ -28,23 +28,27 @@ export const getHighestCasualtyRegions = async (req: Request, res: Response) => 
 
 export const getIncidentTrends = async (req: Request, res: Response) => {
   try {
-    const { year, endYear } = req.query;
-    const result = await getIncidentTrendsService(Number(year), (endYear? Number(endYear) : Number(year)));
+    const { year, endyear } = req.query;
+    const result = await getIncidentTrendsService(Number(year), (endyear? Number(endyear) : Number(year)));
     res.json(result);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching incident trends', error: (error as Error).message });
   }
 };
 
-// export const getTopGroupsByRegion = async (req: Request, res: Response) => {
-//   try {
-//     const { region } = req.query;
-//     const result = await getTopGroups(region);
-//     res.json(result);
-//   } catch (error) {
-//     res.status(500).json({ message: 'Error fetching top groups by region', error: (error as Error).message });
-//   }
-// };
+export const getTopGroupsByRegion = async (req: Request, res: Response) => {
+  try {
+    const  { country, limit } = req.query;
+    if (!country) throw new Error("region is required");
+    const Numlimit = Number(limit);
+    if (Numlimit < -1) throw new Error("limit must be greater than 0");
+
+    const result = await getTopGroups(country as string, Numlimit? Numlimit : 5);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching top groups by region', error: (error as Error).message });
+  }
+};
 
 // export const getGroupsByYear = async (req: Request, res: Response) => {
 //   try {
