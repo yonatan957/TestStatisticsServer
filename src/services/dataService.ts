@@ -5,6 +5,19 @@ import StateAttacksModel from "../models/StateAttacksModel";
 import YearAttacksModel from "../models/YearAttacksModel";
 import YearGroupsModel from "../models/YearGroupsModel";
 
+export const addEvent = async (event: IEvent) => {
+  const results = await Promise.all([
+    addTODataBase(event),
+    addToAttackTypeModel(event),
+    addToYearAttacksModel(event),
+    addToStateAttacksModel(event),
+    addToCountryGroupsModel(event),
+    addToYearGroupsModel(event),
+  ]);
+
+  return results[0];
+};
+
 export const addTODataBase = async (event: IEvent) => {
     const newEvent = new EventModel(event);
     await newEvent.save();

@@ -7,6 +7,7 @@ import { Server } from "socket.io";
 import { handleSocketConnection } from "./socket/io";
 import { initProject } from "./services/sidService";
 import apiRouter from "./routes/apiRouter";
+import eventsRouter from './routes/enetsRouter'
 
 const PORT = process.env.PORT;
 const app = express();
@@ -26,7 +27,7 @@ app.use(express.json());
 app.use(cors());
 
 app.use("/api", apiRouter);
-
+app.use("/events", eventsRouter);
 
 httpServer.listen(PORT, () => {
   console.log(`Server running on http://localhost:${PORT}`);
