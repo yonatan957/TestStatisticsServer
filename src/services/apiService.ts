@@ -2,6 +2,7 @@ import AttackTypeModel from "../models/AttackTypeModel";
 import CountryGroupsModel from "../models/CountryGroupsModel";
 import StateAttacksModel from "../models/StateAttacksModel";
 import YearAttacksModel from "../models/YearAttacksModel";
+import YearGroupsModel from "../models/YearGroupsModel";
 
 // question 1
 export const getAttackTypes = async ()=>{
@@ -51,8 +52,11 @@ export const getTopGroups = async (country: string, limit: number)=>{
     return limit == -1 ? result : result.slice(0, limit);
 }
 
-export const getGroupsByYearService = async ()=>{
-
+// question 5
+export const getGroupsByYearService = async (year : number)=>{
+    const result = await YearGroupsModel.findOne({year: year}).lean();
+    if(!result) throw new Error('year not found');
+    return result.groups.sort((a: { count: number }, b: { count: number }) => b.count - a.count);
 }
 
 export const getRegionsByGroup = async ()=>{

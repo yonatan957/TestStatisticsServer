@@ -50,15 +50,16 @@ export const getTopGroupsByRegion = async (req: Request, res: Response) => {
   }
 };
 
-// export const getGroupsByYear = async (req: Request, res: Response) => {
-//   try {
-//     const { year } = req.query;
-//     const result = await getGroupsByYearService(Number(year));
-//     res.json(result);
-//   } catch (error) {
-//     res.status(500).json({ message: 'Error fetching groups by year', error: (error as Error).message });
-//   }
-// };
+export const getGroupsByYear = async (req: Request, res: Response) => {
+  try {
+    const { year } = req.query;
+    if (!year) throw new Error("year is required");
+    const result = await getGroupsByYearService(Number(year));
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching groups by year', error: (error as Error).message });
+  }
+};
 
 // export const getDeadliestRegionsByGroup = async (req: Request, res: Response) => {
 //   try {
