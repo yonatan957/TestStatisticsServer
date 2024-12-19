@@ -80,6 +80,5 @@ export const getRegionsByGroup = async (groupName: string)=>{
             }
         }
     }
-    console.log(result);
     return result.sort((a: { rate: number }, b: { rate: number }) => a.rate - b.rate);
 }
