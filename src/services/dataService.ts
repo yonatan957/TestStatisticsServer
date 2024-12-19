@@ -6,8 +6,8 @@ import YearAttacksModel from "../models/YearAttacksModel";
 import YearGroupsModel from "../models/YearGroupsModel";
 
 export const addEvent = async (event: IEvent) => {
-  const results = await Promise.all([
-    addTODataBase(event),
+  const result = await addTODataBase(event);
+  await Promise.all([
     addToAttackTypeModel(event),
     addToYearAttacksModel(event),
     addToStateAttacksModel(event),
@@ -15,7 +15,7 @@ export const addEvent = async (event: IEvent) => {
     addToYearGroupsModel(event),
   ]);
 
-  return results[0];
+  return result;
 };
 
 export const addTODataBase = async (event: IEvent) => {
@@ -160,21 +160,15 @@ export const addToYearGroupsModel = async (event: IEvent) => {
   
 export const sortGroupsByCasualties = async function (
       country_txt?: string,
-      gname?: string
   ) {
-      if (country_txt && gname) {
-          const country = await CountryGroupsModel.findOne({ country_txt });
-  
+      if (country_txt) {
+          const country = await CountryGroupsModel.findOne({ country_txt });  
           if (country) {
-              const group = country.groups.find((g: { gname: string }) => g.gname === gname);
-              if (group) {
-                  country.groups.sort((a: { count: number }, b: { count: number }) => b.count - a.count);
-                  await country.save();
-              }
+            country.groups.sort((a: { count: number }, b: { count: number }) => b.count - a.count);
+            await country.save();
           }
       } else {
-          const countries = await CountryGroupsModel.find();
-  
+          const countries = await CountryGroupsModel.find();  
           await Promise.all(
               countries.map(async (country: ICountryGroups) => {
                   country.groups.sort((a: { count: number }, b: { count: number }) => b.count - a.count);
@@ -183,3 +177,22 @@ export const sortGroupsByCasualties = async function (
           );
       }
   };
+
+export const deleteEvent = async (id:string)=>{
+  const event = await EventModel.findByIdAndDelete(id).lean() as IEvent;
+  if (!event) throw new Error('event not found');
+  await decreseForAll(event);
+  await sortGroupsByCasualties(event.country_txt);
+  return event
+}
+
+const decreseForAll = async (event: IEvent) => {
+  console.log(event);
+  await Promise.all([
+    AttackTypeModel.findOneAndUpdate({ attacktype1_txt: event.attacktype1_txt }, { $inc: { countKill: -(event.nkill == undefined ? 0 : event.nkill), countWound: -(event.nwound == undefined ? 0 : event.nwound) } }, { new: true }),
+    CountryGroupsModel.findOneAndUpdate({ country_txt: event.country_txt, 'groups.gname': event.gname },{ $inc: {'groups.$.count': -(event.nkill == undefined ? 0 : event.nkill) - (event.nwound == undefined ? 0 : event.nwound)}},{ new: true }),
+    YearGroupsModel.findOneAndUpdate({ year: event.iyear, 'groups.gname': event.gname },{ $inc: {'groups.$.count': -(event.nkill == undefined ? 0 : event.nkill) - (event.nwound == undefined ? 0 : event.nwound)}},{ new: true }),
+    StateAttacksModel.findOneAndUpdate({ country_txt: event.country_txt }, { $inc: { count: -(event.nkill == undefined ? 0 : event.nkill) - (event.nwound == undefined ? 0 : event.nwound), countKill: -(event.nkill == undefined ? 0 : event.nkill), countWound: -(event.nwound == undefined ? 0 : event.nwound) } }, { new: true }),
+    YearAttacksModel.findOneAndUpdate({ country_txt: event.country_txt }, { $inc: { count: -(event.nkill == undefined ? 0 : event.nkill) - (event.nwound == undefined ? 0 : event.nwound), countKill: -(event.nkill == undefined ? 0 : event.nkill), countWound: -(event.nwound == undefined ? 0 : event.nwound) } }, { new: true }),
+  ])
+}
