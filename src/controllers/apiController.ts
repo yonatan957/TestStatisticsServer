@@ -5,7 +5,8 @@ import {
   getIncidentTrendsService,
   getTopGroups,
   getGroupsByYearService,
-  getRegionsByGroup
+  getRegionsByGroup,
+  getGroupsYears
 } from "../services/apiService";
 
 export const getDeadliestAttackTypes = async (req: Request, res: Response) => {
@@ -52,9 +53,11 @@ export const getTopGroupsByRegion = async (req: Request, res: Response) => {
 
 export const getGroupsByYear = async (req: Request, res: Response) => {
   try {
-    const { year } = req.query;
-    if (!year) throw new Error("year is required");
-    const result = await getGroupsByYearService(Number(year));
+    let result:any[] = [];
+    const { year, groupName } = req.query;
+    if (year) result = await getGroupsByYearService(Number(year));
+    else if (groupName) result = await getGroupsYears(groupName as string);
+    else throw new Error("year or group name is required");
     res.json(result);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching groups by year', error: (error as Error).message });

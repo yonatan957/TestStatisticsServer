@@ -52,11 +52,29 @@ export const getTopGroups = async (country: string, limit: number)=>{
     return limit == -1 ? result : result.slice(0, limit);
 }
 
-// question 5
+// question 5.1
 export const getGroupsByYearService = async (year : number)=>{
     const result = await YearGroupsModel.findOne({year: year}).lean();
     if(!result) throw new Error('year not found');
     return result.groups.sort((a: { count: number }, b: { count: number }) => b.count - a.count);
+}
+
+// question 5.2
+export const getGroupsYears = async (groupName: string) => {
+    const results = await YearGroupsModel.find({'groups.gname': groupName}).lean();
+    const result: { year: number, count: number }[] = [];
+    if (results.length > 0) {
+        results.forEach(res => {
+            const group = res.groups.find(g => g.gname === groupName);
+            result.push({ year: res.year, count: group ? group.count : 0 });
+            if (group) {
+                console.log(`Group: ${group.gname}, Count: ${group.count}`);
+            }
+        });
+    } else {
+        throw new Error('Group not found');
+    }
+    return result
 }
 
 // question 6
