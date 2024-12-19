@@ -196,3 +196,38 @@ const decreseForAll = async (event: IEvent) => {
     YearAttacksModel.findOneAndUpdate({ country_txt: event.country_txt }, { $inc: { count: -(event.nkill == undefined ? 0 : event.nkill) - (event.nwound == undefined ? 0 : event.nwound), countKill: -(event.nkill == undefined ? 0 : event.nkill), countWound: -(event.nwound == undefined ? 0 : event.nwound) } }, { new: true }),
   ])
 }
+
+export const updateEvent = async (event: IEvent) => {
+  try {
+    const existingEvent = await EventModel.findById(event._id);
+    if (!existingEvent) throw new Error('event not found');
+    const updateFields: Partial<IEvent> = {};
+    for (const key in event) {
+        if (event[key as keyof IEvent] !== undefined && event[key as keyof IEvent] !== null) {
+            updateFields[key as keyof IEvent] = event[key as keyof IEvent];
+        }
+    }
+    if (Object.keys(updateFields).length === 0) {
+          console.log('No fields to update');
+          return null;
+      }
+
+    const updatedEvent = await EventModel.findOneAndUpdate(
+          { _id: event._id },
+          { $set: updateFields },
+          { new: true }
+      );
+    await decreseForAll(existingEvent);
+    await Promise.all([
+      addToAttackTypeModel(event),
+      addToYearAttacksModel(event),
+      addToStateAttacksModel(event),
+      addToCountryGroupsModel(event),
+      addToYearGroupsModel(event),
+    ]);
+    if (!updatedEvent) throw new Error('event not found');
+  } catch (error) {
+      console.error('Error updating event:', error);
+      throw error;
+  }
+};

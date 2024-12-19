@@ -85,15 +85,15 @@ export const getRegionsByGroup = async (groupName: string)=>{
     if (!countries) throw new Error('country not found');
     
     const result = [];
-    let plusResult = 0;
+    let plusResult = 1;
     for (const country of countries) {
         for (let index = 0; index < country.groups.length; index++) {
             const group = country.groups[index];
-            if (group.gname === "Unknown") {
-                plusResult = 1;
+            if (group.gname === "Unknown" && groupName !== "Unknown") {
+                plusResult = 0;
             }
             if (group.gname === groupName) {
-                result.push({ country: country.country_txt, rate: index - plusResult });
+                result.push({ country: country.country_txt,count: group.count, rate: index + plusResult });
                 break;
             }
         }
