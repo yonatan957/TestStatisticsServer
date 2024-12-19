@@ -24,6 +24,7 @@ export const addTODataBase = async (event: IEvent) => {
     return newEvent;
   };
   
+// question 1
 export const addToAttackTypeModel = async (event: IEvent) => {
     const attackType = await AttackTypeModel.findOne({
       attacktype1_txt: event.attacktype1_txt,
@@ -42,7 +43,8 @@ export const addToAttackTypeModel = async (event: IEvent) => {
     await newAttackType.save();
     return newAttackType;
   };
-  
+
+// question 3
 export const addToYearAttacksModel = async (event: IEvent) => {
     const yearAttacks = await YearAttacksModel.findOne({ year: event.iyear });
     if (yearAttacks) {
@@ -62,6 +64,7 @@ export const addToYearAttacksModel = async (event: IEvent) => {
     return newYearAttacks;
   };
   
+// question 2
 export const addToStateAttacksModel = async (event: IEvent) => {
     const stateAttacks = await StateAttacksModel.findOne({
       country_txt: event.country_txt,
@@ -98,6 +101,7 @@ const newStateAttacks = new StateAttacksModel({
     return newStateAttacks;
   };
   
+// question 4 & 6
 export const addToCountryGroupsModel = async (event: IEvent) => {
     const countryGroups = await CountryGroupsModel.findOne({
       country_txt: event.country_txt,
@@ -105,12 +109,12 @@ export const addToCountryGroupsModel = async (event: IEvent) => {
     if (countryGroups) {
       for (const group of countryGroups.groups) {
         if (group.gname === event.gname) {
-          group.count += 1;
+          group.count += (event.nwound == undefined ?  0 : event.nwound) + (event.nkill == undefined ? 0 : event.nkill);
           await countryGroups.save();
           return countryGroups;
         }
       }
-      countryGroups.groups.push({ gname: event.gname, count: 1 });
+      countryGroups.groups.push({ gname: event.gname, count: (event.nwound == undefined ?  0 : event.nwound) + (event.nkill == undefined ? 0 : event.nkill) });
       await countryGroups.save();
       return countryGroups;
     }
@@ -135,7 +139,8 @@ export const addToCountryGroupsModel = async (event: IEvent) => {
     await newCountryGroups.save();
     return newCountryGroups;
   };
-  
+
+// question 5
 export const addToYearGroupsModel = async (event: IEvent) => {
     const yearGroups = await YearGroupsModel.findOne({ year: event.iyear });
     if (yearGroups) {
@@ -146,13 +151,13 @@ export const addToYearGroupsModel = async (event: IEvent) => {
           return yearGroups;
         }
       }
-      yearGroups.groups.push({ gname: event.gname, count: 1 });
+      yearGroups.groups.push({ gname: event.gname, count: (event.nwound == undefined ?  0 : event.nwound) + (event.nkill == undefined ? 0 : event.nkill) });
       await yearGroups.save();
       return yearGroups;
     }
     const newYearGroups = new YearGroupsModel({
       year: event.iyear,
-      groups: [{ gname: event.gname, count: 1 }],
+      groups: [{ gname: event.gname, count: (event.nwound == undefined ?  0 : event.nwound) + (event.nkill == undefined ? 0 : event.nkill) }],
     });
     await newYearGroups.save();
     return newYearGroups;
@@ -190,10 +195,10 @@ const decreseForAll = async (event: IEvent) => {
   console.log(event);
   await Promise.all([
     AttackTypeModel.findOneAndUpdate({ attacktype1_txt: event.attacktype1_txt }, { $inc: { countKill: -(event.nkill == undefined ? 0 : event.nkill), countWound: -(event.nwound == undefined ? 0 : event.nwound) } }, { new: true }),
-    CountryGroupsModel.findOneAndUpdate({ country_txt: event.country_txt, 'groups.gname': event.gname },{ $inc: {'groups.$.count': -(event.nkill == undefined ? 0 : event.nkill) - (event.nwound == undefined ? 0 : event.nwound)}},{ new: true }),
-    YearGroupsModel.findOneAndUpdate({ year: event.iyear, 'groups.gname': event.gname },{ $inc: {'groups.$.count': -(event.nkill == undefined ? 0 : event.nkill) - (event.nwound == undefined ? 0 : event.nwound)}},{ new: true }),
+    YearGroupsModel.findOneAndUpdate({ year: event.iyear, 'groups.gname': event.gname },{ $inc: {'groups.$.count': -((event.nkill == undefined ? 0 : event.nkill) + (event.nwound == undefined ? 0 : event.nwound))}},{ new: true }),
+    CountryGroupsModel.findOneAndUpdate({ country_txt: event.country_txt, 'groups.gname': event.gname },{ $inc: {'groups.$.count': -((event.nkill == undefined ? 0 : event.nkill) + (event.nwound == undefined ? 0 : event.nwound))}},{ new: true }),
     StateAttacksModel.findOneAndUpdate({ country_txt: event.country_txt }, { $inc: { count: -(event.nkill == undefined ? 0 : event.nkill) - (event.nwound == undefined ? 0 : event.nwound), countKill: -(event.nkill == undefined ? 0 : event.nkill), countWound: -(event.nwound == undefined ? 0 : event.nwound) } }, { new: true }),
-    YearAttacksModel.findOneAndUpdate({ country_txt: event.country_txt }, { $inc: { count: -(event.nkill == undefined ? 0 : event.nkill) - (event.nwound == undefined ? 0 : event.nwound), countKill: -(event.nkill == undefined ? 0 : event.nkill), countWound: -(event.nwound == undefined ? 0 : event.nwound) } }, { new: true }),
+    YearAttacksModel.findOneAndUpdate({ year: event.iyear }, { $inc: { count: -(event.nkill == undefined ? 0 : event.nkill) - (event.nwound == undefined ? 0 : event.nwound), countKill: -(event.nkill == undefined ? 0 : event.nkill), countWound: -(event.nwound == undefined ? 0 : event.nwound) } }, { new: true }),
   ])
 }
 
@@ -201,31 +206,22 @@ export const updateEvent = async (event: IEvent) => {
   try {
     const existingEvent = await EventModel.findById(event._id);
     if (!existingEvent) throw new Error('event not found');
-    const updateFields: Partial<IEvent> = {};
-    for (const key in event) {
-        if (event[key as keyof IEvent] !== undefined && event[key as keyof IEvent] !== null) {
-            updateFields[key as keyof IEvent] = event[key as keyof IEvent];
-        }
-    }
-    if (Object.keys(updateFields).length === 0) {
-          console.log('No fields to update');
-          return null;
-      }
-
     const updatedEvent = await EventModel.findOneAndUpdate(
           { _id: event._id },
-          { $set: updateFields },
+          { $set: event },
           { new: true }
       );
     await decreseForAll(existingEvent);
+    if (!updatedEvent) {
+      throw new Error('Updated event not found');
+    }
     await Promise.all([
-      addToAttackTypeModel(event),
-      addToYearAttacksModel(event),
-      addToStateAttacksModel(event),
-      addToCountryGroupsModel(event),
-      addToYearGroupsModel(event),
+      addToAttackTypeModel(updatedEvent),
+      addToYearAttacksModel(updatedEvent),
+      addToStateAttacksModel(updatedEvent),
+      addToCountryGroupsModel(updatedEvent),
+      addToYearGroupsModel(updatedEvent),
     ]);
-    if (!updatedEvent) throw new Error('event not found');
   } catch (error) {
       console.error('Error updating event:', error);
       throw error;

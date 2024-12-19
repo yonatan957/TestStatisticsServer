@@ -9,6 +9,7 @@ export interface IYearGroups extends Document {
 
 const YearGroupsSchema = new Schema<IYearGroups>({
     year: {type: Number, required: true},
+    // count mean amount of casualties
     groups: [{gname: String, count: Number}]
 });
 

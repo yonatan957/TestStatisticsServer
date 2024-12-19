@@ -11,6 +11,7 @@ export interface ICountryGroups extends Document {
 
 const CountryGroupsSchema = new Schema<ICountryGroups>({
     country_txt: { type: String, required: true },
+    // count mean amount of casualties
     groups: [{ gname: String, count: Number }],
     lat: { type: Number, required: true },
     lng: { type: Number, required: true },
