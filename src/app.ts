@@ -7,7 +7,7 @@ import { Server } from "socket.io";
 import { handleSocketConnection } from "./socket/io";
 import { initProject } from "./services/sidService";
 import apiRouter from "./routes/apiRouter";
-import eventsRouter from './routes/enetsRouter'
+import eventsRouter from './routes/evnetsRouter'
 
 const PORT = process.env.PORT;
 const app = express();

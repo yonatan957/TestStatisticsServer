@@ -5,5 +5,5 @@ const router = Router();
 
 router.post("/", addNewEvent)
 router.delete("/:id", deleteEventById);
-
+router.put("/:id",);
 export default router
