@@ -1,8 +1,9 @@
 import { Router } from "express";
-import { addNewEvent } from "../controllers/eventsController";
+import { addNewEvent, deleteEventById } from "../controllers/eventsController";
 
 const router = Router();
 
 router.post("/", addNewEvent)
+router.delete("/:id", deleteEventById);
 
 export default router
