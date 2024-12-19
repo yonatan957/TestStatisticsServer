@@ -26,15 +26,15 @@ export const getHighestCasualtyRegions = async (req: Request, res: Response) => 
   }
 };
 
-// export const getIncidentTrends = async (req: Request, res: Response) => {
-//   try {
-//     const { year, month } = req.query;
-//     const result = await getIncidentTrendsService(Number(year), Number(month));
-//     res.json(result);
-//   } catch (error) {
-//     res.status(500).json({ message: 'Error fetching incident trends', error: (error as Error).message });
-//   }
-// };
+export const getIncidentTrends = async (req: Request, res: Response) => {
+  try {
+    const { year, endYear } = req.query;
+    const result = await getIncidentTrendsService(Number(year), (endYear? Number(endYear) : Number(year)));
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching incident trends', error: (error as Error).message });
+  }
+};
 
 // export const getTopGroupsByRegion = async (req: Request, res: Response) => {
 //   try {

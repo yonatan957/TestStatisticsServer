@@ -1,12 +1,13 @@
+import EventModel from "../models/EventModel";
 import { addToAttackTypeModel, addToCountryGroupsModel, addTODataBase, addToStateAttacksModel, addToYearAttacksModel, addToYearGroupsModel, sortGroupsByCasualties } from "./dataService";
 
 export const initProject = async () => {
     console.time('initProject');
   
-    // const eventExists = await EventModel.findOne();
-    // if (eventExists) {
-    //   return;
-    // }
+    const eventExists = await EventModel.findOne();
+    if (eventExists) {
+      return;
+    }
     
     const events = require(process.env.DATA_PATH as string);
     const totalEvents = events.length;

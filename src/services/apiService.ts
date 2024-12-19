@@ -1,11 +1,14 @@
 import AttackTypeModel from "../models/AttackTypeModel";
 import StateAttacksModel from "../models/StateAttacksModel";
+import YearAttacksModel from "../models/YearAttacksModel";
 
+// question 1
 export const getAttackTypes = async ()=>{
     const attackTypes = await AttackTypeModel.find({}).lean().sort({ countKill: -1 });
     return attackTypes
 }
 
+// question 2
 export const getCasualtyRegions = async ()=>{
     const stateAttacks = await StateAttacksModel.aggregate([
         {
@@ -17,7 +20,11 @@ export const getCasualtyRegions = async ()=>{
                 latitude: 1,
                 longitude: 1,
                 averageCasualties: {
-                    $avg: ["$countKill", "$countWound"]
+                    $cond: {
+                        if: { $gt: ["$count", 0] },
+                        then: { $divide: [{ $add: ["$countKill", "$countWound"] }, "$count"] },
+                        else: 0
+                    }
                 }
             }
         },
@@ -26,11 +33,12 @@ export const getCasualtyRegions = async ()=>{
         }
     ]);
 
-    return stateAttacks
+    return stateAttacks;
 }
 
-export const getIncidentTrendsService = async ()=>{
-
+// question 3
+export const getIncidentTrendsService = async (year: number, endYear: number)=>{
+    return await YearAttacksModel.find({year: {$gte: year, $lte: endYear}}).lean();
 }
 
 export const getTopGroups = async ()=>{
