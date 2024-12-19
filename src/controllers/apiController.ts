@@ -61,12 +61,13 @@ export const getGroupsByYear = async (req: Request, res: Response) => {
   }
 };
 
-// export const getDeadliestRegionsByGroup = async (req: Request, res: Response) => {
-//   try {
-//     const { groupName } = req.query;
-//     const result = await getRegionsByGroup(groupName as string);
-//     res.json(result);
-//   } catch (error) {
-//     res.status(500).json({ message: 'Error fetching deadliest regions by group', error: (error as Error).message });
-//   }
-// };
+export const getDeadliestRegionsByGroup = async (req: Request, res: Response) => {
+  try {
+    const { groupName } = req.query;
+    if (!groupName) throw new Error("group name is required");
+    const result = await getRegionsByGroup(groupName as string);
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching deadliest regions by group', error: (error as Error).message });
+  }
+};

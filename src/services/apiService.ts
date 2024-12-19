@@ -59,6 +59,27 @@ export const getGroupsByYearService = async (year : number)=>{
     return result.groups.sort((a: { count: number }, b: { count: number }) => b.count - a.count);
 }
 
-export const getRegionsByGroup = async ()=>{
-
+// question 6
+export const getRegionsByGroup = async (groupName: string)=>{
+    const countries = await CountryGroupsModel.find({
+        groups: { $elemMatch: { gname: groupName } }
+    }).lean();
+    if (!countries) throw new Error('country not found');
+    
+    const result = [];
+    let plusResult = 0;
+    for (const country of countries) {
+        for (let index = 0; index < country.groups.length; index++) {
+            const group = country.groups[index];
+            if (group.gname === "Unknown") {
+                plusResult = 1;
+            }
+            if (group.gname === groupName) {
+                result.push({ country: country.country_txt, rate: index - plusResult });
+                break;
+            }
+        }
+    }
+    console.log(result);
+    return result.sort((a: { rate: number }, b: { rate: number }) => a.rate - b.rate);
 }
