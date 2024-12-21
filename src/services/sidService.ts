@@ -17,12 +17,9 @@ export const initProject = async () => {
       await addToCountryGroupsModel(event);
       await addToYearGroupsModel(event);
       let percent = Math.floor((i / totalEvents) * 100);
-      const progress = '='.repeat(Math.floor(percent / 2));
-      const spaces = ' '.repeat(50 - progress.length);
-
-      process.stdout.write(`\r[${progress}${spaces}]    ${++i}/${totalEvents} (${percent}%)${ percent < 20 ? '😨' : percent < 40 ? '😭' : percent < 60 ? '😑' : percent < 80 ? '😊' : '😀'} `);
+      process.stdout.write(`\r${++i}/${totalEvents} (${percent}%)${ percent < 20 ? '😨' : percent < 40 ? '😭' : percent < 60 ? '😑' : percent < 80 ? '😊' : '😀'} `);
       if (i === totalEvents) {
-        process.stdout.write(`\r[${'='.repeat(50)}] 100% ${i}/${totalEvents} 😊\n`);
+        process.stdout.write(`\r 100% ${i}/${totalEvents} 😊\n`);
       }
     }
     await sortGroupsByCasualties();

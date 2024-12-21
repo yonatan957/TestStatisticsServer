@@ -74,9 +74,6 @@ export const getGroupsYears = async (groupName: string) => {
         results.forEach(res => {
             const group = res.groups.find(g => g.gname === groupName);
             result.push({ year: res.year, count: group ? group.count : 0 });
-            if (group) {
-                console.log(`Group: ${group.gname}, Count: ${group.count}`);
-            }
         });
     } else {
         throw new Error('Group not found');
