@@ -4,10 +4,7 @@ import { addToAttackTypeModel, addToCountryGroupsModel, addTODataBase, addToStat
 export const initProject = async () => {
     console.time('initProject');
   
-    const eventExists = await EventModel.findOne();
-    if (eventExists) {
-      return;
-    }
+    if (await EventModel.findOne()) return
     
     const events = require(process.env.DATA_PATH as string);
     const totalEvents = events.length;
@@ -19,11 +16,15 @@ export const initProject = async () => {
       await addToStateAttacksModel(event);
       await addToCountryGroupsModel(event);
       await addToYearGroupsModel(event);
-      let procent = Math.floor((i / totalEvents) * 100);
-      process.stdout.write(`\r${++i}/${totalEvents} (${procent}%)${ procent < 20 ? '😨' : procent < 40 ? '😭' : procent < 60 ? '😑' : procent < 80 ? '😊' : '😀'} `);
-    }
+      let percent = Math.floor((i / totalEvents) * 100);
+      const progress = '='.repeat(Math.floor(percent / 2));
+      const spaces = ' '.repeat(50 - progress.length);
 
-    console.log("\nadded all events 😗");
+      process.stdout.write(`\r[${progress}${spaces}]    ${++i}/${totalEvents} (${percent}%)${ percent < 20 ? '😨' : percent < 40 ? '😭' : percent < 60 ? '😑' : percent < 80 ? '😊' : '😀'} `);
+      if (i === totalEvents) {
+        process.stdout.write(`\r[${'='.repeat(50)}] 100% ${i}/${totalEvents} 😊\n`);
+      }
+    }
     await sortGroupsByCasualties();
     console.timeEnd('initProject');
   };

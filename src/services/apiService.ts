@@ -1,5 +1,6 @@
 import AttackTypeModel from "../models/AttackTypeModel";
 import CountryGroupsModel from "../models/CountryGroupsModel";
+import EventModel from "../models/EventModel";
 import StateAttacksModel from "../models/StateAttacksModel";
 import YearAttacksModel from "../models/YearAttacksModel";
 import YearGroupsModel from "../models/YearGroupsModel";
@@ -40,8 +41,12 @@ export const getCasualtyRegions = async ()=>{
 
 // question 3
 export const getIncidentTrendsService = async (year: number, endYear: number)=>{
-    return await YearAttacksModel.find({year: {$gte: year, $lte: endYear}}).lean();
-}
+    return await YearAttacksModel.find({
+        year: { $gte: year, $lte: endYear }
+      })
+        .sort({ year: 1 })
+        .lean();
+    }
 
 // question 4
 export const getTopGroups = async (country: string, limit: number)=>{
@@ -53,10 +58,12 @@ export const getTopGroups = async (country: string, limit: number)=>{
 }
 
 // question 5.1
-export const getGroupsByYearService = async (year : number)=>{
+export const getGroupsByYearService = async (year : number, amount: number)=>{
     const result = await YearGroupsModel.findOne({year: year}).lean();
     if(!result) throw new Error('year not found');
-    return result.groups.sort((a: { count: number }, b: { count: number }) => b.count - a.count);
+    const sortedResult = result.groups.sort((a: { count: number }, b: { count: number }) => b.count - a.count);
+    if (amount == -1) return sortedResult;
+    return sortedResult.slice(0, amount);
 }
 
 // question 5.2
@@ -99,4 +106,8 @@ export const getRegionsByGroup = async (groupName: string)=>{
         }
     }
     return result.sort((a: { rate: number }, b: { rate: number }) => a.rate - b.rate);
+}
+
+export const getGroupList = async ()=>{
+    return await EventModel.distinct('gname')   
 }
