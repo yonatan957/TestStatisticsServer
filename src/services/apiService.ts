@@ -54,7 +54,13 @@ export const getTopGroups = async (country: string, limit: number)=>{
     if(!countryObject) throw new Error('country not found');
 
     const result = countryObject.groups.sort((a: { count: number }, b: { count: number }) => b.count - a.count);
-    return limit == -1 ? result : result.slice(0, limit);
+    const resultamount = limit == -1 ? result : result.slice(0, limit);
+    return {
+        country: countryObject.country_txt,
+        groups: resultamount,
+        latitude: countryObject.lat,
+        longitude: countryObject.lng
+    }
 }
 
 // question 5.1
@@ -107,4 +113,7 @@ export const getRegionsByGroup = async (groupName: string)=>{
 
 export const getGroupList = async ()=>{
     return await EventModel.distinct('gname')   
+}
+export const getCountriesList = async ()=>{
+    return await StateAttacksModel.distinct('country_txt');
 }

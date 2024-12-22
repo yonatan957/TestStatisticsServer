@@ -6,7 +6,8 @@ import {
   getTopGroupsByRegion,
   getGroupsByYear,
   getDeadliestRegionsByGroup,
-  grouplist
+  grouplist,
+  countriesList
 } from '../controllers/apiController';
 
 const router: Router = express.Router();
@@ -18,5 +19,6 @@ router.get('/relationships/top-groups', getTopGroupsByRegion);
 router.get('/relationships/groups-by-year', getGroupsByYear);
 router.get('/relationships/deadliest-regions', getDeadliestRegionsByGroup);
 router.get('/grouplist', grouplist)
+router.get('/countrieslist', countriesList)
 
 export default router;

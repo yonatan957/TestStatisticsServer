@@ -7,7 +7,8 @@ import {
   getGroupsByYearService,
   getRegionsByGroup,
   getGroupsYears,
-  getGroupList
+  getGroupList,
+  getCountriesList
 } from "../services/apiService";
 
 export const getDeadliestAttackTypes = async (req: Request, res: Response) => {
@@ -41,7 +42,7 @@ export const getIncidentTrends = async (req: Request, res: Response) => {
 export const getTopGroupsByRegion = async (req: Request, res: Response) => {
   try {
     const  { country, limit } = req.query;
-    if (!country) throw new Error("region is required");
+    if (!country) throw new Error("country is required");
     const Numlimit = Number(limit);
     if (Numlimit < -1) throw new Error("limit must be greater than 0");
 
@@ -79,6 +80,14 @@ export const getDeadliestRegionsByGroup = async (req: Request, res: Response) =>
 export const grouplist = async (req: Request, res: Response) => {
   try {
     const result = await getGroupList();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching deadliest regions by group', error: (error as Error).message });
+  }
+};
+export const countriesList = async (req: Request, res: Response) => {
+  try {
+    const result = await getCountriesList();
     res.json(result);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching deadliest regions by group', error: (error as Error).message });
