@@ -3,7 +3,7 @@
 import mongoose, { Document, Schema } from "mongoose";
 
 export interface IEvent extends Document {
-    eventid: number;
+    eventid?: number;
     iyear: number;
     imonth: number;
     iday: number;
@@ -25,7 +25,7 @@ export interface IEvent extends Document {
 }
 
 const EventSchema = new Schema<IEvent>({
-    eventid: { type: Number, required: true, unique: true },
+    eventid: { type: Number, required: false, unique: false },
     iyear: { type: Number, required: true },
     imonth: { type: Number, required: true },
     iday: { type: Number, required: true },

@@ -1,3 +1,4 @@
+import { io } from "../app";
 import AttackTypeModel from "../models/AttackTypeModel";
 import CountryGroupsModel, { ICountryGroups } from "../models/CountryGroupsModel";
 import EventModel, { IEvent } from "../models/EventModel";
@@ -14,7 +15,7 @@ export const addEvent = async (event: IEvent) => {
     addToCountryGroupsModel(event),
     addToYearGroupsModel(event),
   ]);
-
+  io.emit('eventUpdate', event)
   return result;
 };
 
@@ -189,6 +190,7 @@ export const deleteEvent = async (id:string)=>{
   if (!event) throw new Error('event not found');
   await decreseForAll(event);
   await sortGroupsByCasualties(event.country_txt);
+  io.emit('eventUpdate', event)
   return event
 }
 
@@ -232,6 +234,7 @@ export const updateEvent = async (event: IEvent) => {
       addToCountryGroupsModel(updatedEvent),
       addToYearGroupsModel(updatedEvent),
     ]);
+    io.emit('eventUpdate', event)
   } catch (error) {
       console.error('Error updating event:', error);
       throw error;
