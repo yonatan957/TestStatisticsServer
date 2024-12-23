@@ -88,7 +88,7 @@ export const getGroupsYears = async (groupName: string) => {
 }
 
 // question 6
-export const getRegionsByGroup = async (groupName: string)=>{
+export const getRegionsByGroup = async (groupName: string,amount: number)=>{
     const countries = await CountryGroupsModel.find({
         groups: { $elemMatch: { gname: groupName } }
     }).lean();
@@ -103,12 +103,12 @@ export const getRegionsByGroup = async (groupName: string)=>{
                 plusResult = 0;
             }
             if (group.gname === groupName) {
-                result.push({ country: country.country_txt,count: group.count, rate: index + plusResult });
+                result.push({ country: country.country_txt,count: group.count, rate: index + plusResult, lat: country.lat, lng: country.lng });
                 break;
             }
         }
     }
-    return result.sort((a: { rate: number }, b: { rate: number }) => a.rate - b.rate);
+    return result.sort((a: { rate: number }, b: { rate: number }) => a.rate - b.rate).slice(0, amount);
 }
 
 export const getGroupList = async ()=>{
@@ -116,4 +116,14 @@ export const getGroupList = async ()=>{
 }
 export const getCountriesList = async ()=>{
     return await StateAttacksModel.distinct('country_txt');
+}
+export const getFreeSearch = async (search: string, page: number) => {
+    const pageSize = 10;
+    search = search.trim();
+    const events = await EventModel.find({
+        summary: { $regex: search, $options: 'i' }
+    })
+    .skip((page - 1) * pageSize)
+    .limit(pageSize);
+    return events;
 }

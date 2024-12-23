@@ -8,7 +8,8 @@ import {
   getRegionsByGroup,
   getGroupsYears,
   getGroupList,
-  getCountriesList
+  getCountriesList,
+  getFreeSearch
 } from "../services/apiService";
 
 export const getDeadliestAttackTypes = async (req: Request, res: Response) => {
@@ -68,9 +69,9 @@ export const getGroupsByYear = async (req: Request, res: Response) => {
 
 export const getDeadliestRegionsByGroup = async (req: Request, res: Response) => {
   try {
-    const { groupName } = req.query;
+    const { groupName, amount  } = req.query;
     if (!groupName) throw new Error("group name is required");
-    const result = await getRegionsByGroup(groupName as string);
+    const result = await getRegionsByGroup(groupName as string, Number(amount? amount : 5));
     res.json(result);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching deadliest regions by group', error: (error as Error).message });
@@ -88,6 +89,16 @@ export const grouplist = async (req: Request, res: Response) => {
 export const countriesList = async (req: Request, res: Response) => {
   try {
     const result = await getCountriesList();
+    res.json(result);
+  } catch (error) {
+    res.status(500).json({ message: 'Error fetching deadliest regions by group', error: (error as Error).message });
+  }
+};
+
+export const freeSearch = async (req: Request, res: Response) => {
+  try {
+    const { search, page } = req.query;
+    const result = await getFreeSearch(search as string, Number(page? page : 1));
     res.json(result);
   } catch (error) {
     res.status(500).json({ message: 'Error fetching deadliest regions by group', error: (error as Error).message });
