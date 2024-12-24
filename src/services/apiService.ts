@@ -118,7 +118,7 @@ export const getCountriesList = async ()=>{
     return await StateAttacksModel.distinct('country_txt');
 }
 export const getFreeSearch = async (search: string, page: number) => {
-    const pageSize = 10;
+    const pageSize = 100;
     search = search.trim();
     const events = await EventModel.find({
         summary: { $regex: search, $options: 'i' }
